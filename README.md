@@ -10,4 +10,4 @@ Welcome to the repo for the OKC Happy Hour Map!
 ### In Progress
 - Changing light/dark mode based on the current time of day
 - Updating data store to get away from Google Sheets and move to Postgres
-- Change from local hosting and bring online to the public
+- Change from local hosting and bring online to the public 
