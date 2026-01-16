@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Define dark mode variant */
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body, #root {
+  height: 100%;
+}
+
+
+/* Status marker dots (Leaflet divIcon) */
+.hh-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+.hh-pin-active {
+  background: #7c3aed; /* accent */
+}
+
+.hh-pin-upcoming {
+  background: rgba(124, 58, 237, 0.45); /* muted accent */
+}
+
+.hh-pin-inactive {
+  background: rgba(107, 114, 128, 0.45); /* gray */
+}
+
+/* Optional: subtle glow for active */
+.hh-pin-active {
+  box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.18), 0 6px 14px rgba(0,0,0,0.25);
+}
+
+/* Give Leaflet controls breathing room (helps mobile safe areas) */
+.leaflet-bottom.leaflet-right {
+  margin-bottom: 16px;
+  margin-right: 12px;
+}
+
+/* If your filter/list pills are also top-left, this won’t collide */
