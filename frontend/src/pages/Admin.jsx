@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getToken, clearToken } from "../lib/auth";
+import { API_BASE } from "../lib/api";
 
-const API = import.meta.env.VITE_API_BASE;
+// const API = import.meta.env.VITE_API_BASE;
 
 export default function Admin() {
   const [rows, setRows] = useState([]);
@@ -16,7 +17,7 @@ export default function Admin() {
 
   async function load() {
     setStatus("");
-    const res = await fetch(`${API}/admin/locations`, { headers: authHeaders });
+    const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
     if (res.status === 401) {
       window.location.href = "/admin/login";
       return;
@@ -66,7 +67,7 @@ export default function Admin() {
       lon: draft.lon === "" ? "" : Number(draft.lon),
     };
 
-    const res = await fetch(`${API}/admin/locations/${id}`, {
+    const res = await fetch(`${API_BASE}/admin/locations/${id}`, {
       method: "PUT",
       headers: {
         ...authHeaders,
@@ -98,7 +99,7 @@ export default function Admin() {
     if (!confirm("Delete this location?")) return;
     setStatus("Deleting...");
 
-    const res = await fetch(`${API}/admin/locations/${id}`, {
+    const res = await fetch(`${API_BASE}/admin/locations/${id}`, {
       method: "DELETE",
       headers: authHeaders,
     });

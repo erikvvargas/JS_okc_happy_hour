@@ -5,6 +5,7 @@ import DesktopSidebar from "./components/DesktopSidebar";
 import MobileDrawer from "./components/MobileDrawer";
 import DesktopFilters from "./components/DesktopFilters";
 import MobileFilters from "./components/MobileFilters";
+import { API_BASE } from "./lib/api";
 
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -103,8 +104,7 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    // fetch("http://localhost:8000/locations")
-    fetch(`${import.meta.env.VITE_API_BASE}/locations`)
+    fetch(`${API_BASE}/locations`)
       .then((res) => res.json())
       .then((data) => setLocations(data))
       .catch((err) => console.error("Failed to load locations", err));

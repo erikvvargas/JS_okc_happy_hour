@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { setToken } from "../lib/auth";
+import { API_BASE } from "../lib/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -8,7 +9,7 @@ export default function AdminLogin() {
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
-    const res = await fetch(`${import.meta.env.VITE_API_BASE}/auth/login`, {
+    const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
