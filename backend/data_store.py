@@ -62,7 +62,7 @@ def load_locations():
             "start_time": _time_to_str(r.start_time),
             "end_time": _time_to_str(r.end_time),
             "happy_hour": r.happy_hour,
-            "description": r.description,
+            # "description": r.description,
             "updated_at": (r.updated_at.isoformat() if r.updated_at else None),
         })
     return out
@@ -92,7 +92,7 @@ def create_location(payload: dict):
             lon=float(payload["lon"]),
             days=payload.get("days"),
             happy_hour=payload.get("happy_hour"),
-            description=payload.get("description"),
+            # description=payload.get("description"),
             start_time=_parse_time_hhmm(payload.get("start_time")),
             end_time=_parse_time_hhmm(payload.get("end_time")),
             updated_at=datetime.now(timezone.utc),
@@ -113,7 +113,7 @@ def update_location(loc_id: str, payload: dict):
                 lon=float(payload.get("lon")),
                 days=payload.get("days"),
                 happy_hour=payload.get("happy_hour"),
-                description=payload.get("description"),
+                # description=payload.get("description"),
                 start_time=payload.get("start_time"),  # see note below
                 end_time=payload.get("end_time"),
                 updated_at=datetime.now(timezone.utc),

@@ -20,6 +20,6 @@ class Location(Base):
     end_time: Mapped[object | None] = mapped_column(Time, nullable=True)
 
     happy_hour: Mapped[str | None] = mapped_column(Text, nullable=True)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
