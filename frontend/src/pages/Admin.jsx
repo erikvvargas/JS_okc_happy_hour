@@ -43,7 +43,7 @@ export default function Admin() {
       days: row.days ?? "",
       start_time: row.start_time ?? "",
       end_time: row.end_time ?? "",
-      description: row.description ?? "",
+      // description: row.description ?? "",
     });
     setStatus("");
   }
@@ -308,13 +308,13 @@ export default function Admin() {
             onChange={(e) => updateDraft("happy_hour", e.target.value)}
           />
 
-          <label className="block text-xs opacity-70 mb-1">Description</label>
+          {/* <label className="block text-xs opacity-70 mb-1">Description</label>
           <textarea
             className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-2"
             rows={3}
             value={draft.description}
             onChange={(e) => updateDraft("description", e.target.value)}
-          />
+          /> */}
         </div>
       ) : null}
     </div>
