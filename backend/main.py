@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from cache import CACHE_KEY_LOCATIONS, CACHE_TTL_SECONDS, cache_get_json, cache_set_json, invalidate_locations_cache
 # and your existing load function, e.g. load_locations()
 from auth import create_token, require_admin
-from data_store import load_locations, add_location, update_location, delete_location
+from data_store import load_locations, create_location, update_location, delete_location
 
 load_dotenv()
 
@@ -58,7 +58,7 @@ def admin_list(_: bool = Depends(require_admin)):
 
 @app.post("/admin/locations")
 async def admin_add(payload: dict, _: bool = Depends(require_admin)):
-    add_location(payload)
+    create_location(payload)
     await invalidate_locations_cache()
     return {"ok": True}
 
