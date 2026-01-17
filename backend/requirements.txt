@@ -6,3 +6,4 @@ gspread
 google-auth
 pandas
 python-jose[cryptography]
+upstash-redis
