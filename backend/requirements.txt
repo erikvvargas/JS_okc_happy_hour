@@ -8,4 +8,4 @@ pandas
 python-jose[cryptography]
 upstash-redis
 SQLAlchemy>=2.0
-psycopg[binary]
+psycopg2-binary
