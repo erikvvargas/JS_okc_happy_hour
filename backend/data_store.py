@@ -25,11 +25,11 @@ from datetime import datetime, timezone, time
 #     sheet = client.open(SHEET_NAME)
 #     return sheet.worksheet(WORKSHEET_NAME)
 
-# def _time_to_str(t):
-#     if t is None:
-#         return None
-#     # psycopg returns datetime.time
-#     return t.strftime("%H:%M")
+def _time_to_str(t):
+    if t is None:
+        return None
+    # psycopg returns datetime.time
+    return t.strftime("%H:%M")
 
 def _parse_time_hhmm(s: str | None) -> time | None:
     if not s:
