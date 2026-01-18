@@ -3,6 +3,9 @@ import { getToken, clearToken } from "../lib/auth";
 import { API_BASE } from "../lib/api";
 
 // const API = import.meta.env.VITE_API_BASE;
+const token = localStorage.getItem("admin_token");
+const authHeaders = { Authorization: `Bearer ${token}` };
+const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
 
 export default function Admin() {
   const [rows, setRows] = useState([]);

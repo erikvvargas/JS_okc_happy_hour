@@ -53,8 +53,9 @@ def get_locations():
 # Admin (protected)
 @app.get("/admin/locations")
 def admin_list(_: bool = Depends(require_admin)):
-    df = load_locations()
-    return df.to_dict(orient="records")
+    # df = load_locations()
+    # return df.to_dict(orient="records")
+    return load_locations()
 
 @app.post("/admin/locations")
 async def admin_add(payload: dict, _: bool = Depends(require_admin)):
