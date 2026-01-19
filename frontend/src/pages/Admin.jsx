@@ -3,9 +3,9 @@ import { getToken, clearToken } from "../lib/auth";
 import { API_BASE } from "../lib/api";
 
 // const API = import.meta.env.VITE_API_BASE;
-const token = localStorage.getItem("admin_token");
-const authHeaders = { Authorization: `Bearer ${token}` };
-const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
+// const token = localStorage.getItem("admin_token");
+// const authHeaders = { Authorization: `Bearer ${token}` };
+// const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
 const DAYS = [
   { key: "Mon", label: "Mon" },
   { key: "Tue", label: "Tue" },
@@ -42,22 +42,12 @@ export default function Admin() {
   const [geoStatus, setGeoStatus] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
 
-
-  async function load() {
-    setStatus("");
-    const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
-    if (res.status === 401) {
-      window.location.href = "/admin/login";
-      return;
-    }
-    const data = await res.json();
-    setRows(data);
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  function serializeDays(daysArray) {
+    // Keep them in weekday order
+    const order = DAYS.map((d) => d.key);
+    const sorted = [...daysArray].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    return sorted.join(",");
+  }  
 
   function toggleDay(dayKey) {
     setDraft((d) => {
@@ -89,12 +79,15 @@ export default function Admin() {
       return;
     }
 
-  function serializeDays(daysArray) {
-    // Keep them in weekday order
-    const order = DAYS.map((d) => d.key);
-    const sorted = [...daysArray].sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    return sorted.join(",");
+    setDraft((d) => ({
+      ...d,
+      lat: String(data.lat),
+      lon: String(data.lon),
+      // optional: you can store place_name too if you want to show it
+    }));
+    setGeoStatus("Geocoded ✓");
   }
+
 
   async function saveNewLocation() {
     setSaveStatus("");
@@ -134,16 +127,23 @@ export default function Admin() {
     await load(); // reload admin table
   }
 
-
-
-  setDraft((d) => ({
-      ...d,
-      lat: String(data.lat),
-      lon: String(data.lon),
-      // optional: you can store place_name too if you want to show it
-    }));
-    setGeoStatus("Geocoded ✓");
+  async function load() {
+    setStatus("");
+    const res = await fetch(`${API_BASE}/admin/locations`, { headers: authHeaders });
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    const data = await res.json();
+    setRows(data);
   }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  
 
   function startEdit(row) {
     setEditingId(row.id);
@@ -408,134 +408,6 @@ export default function Admin() {
           </tbody>
         </table>
       </div>
-
-      <button
-        onClick={() => { setDraft(emptyDraft); setGeoStatus(""); setSaveStatus(""); setIsAddOpen(true); }}
-        className="rounded-full px-3 py-2 text-sm bg-black text-white dark:bg-white dark:text-black"
-      >
-        + Add
-      </button>
-
-      {isAddOpen && (
-        <div className="fixed inset-0 z-[2000]">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setIsAddOpen(false)}
-          />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/10 shadow-xl">
-              <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
-                <div className="font-semibold">Add Location</div>
-                <button
-                  className="rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
-                  onClick={() => setIsAddOpen(false)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="p-4 space-y-3">
-                <input className="w-full rounded-lg border p-2 bg-transparent"
-                  placeholder="Name"
-                  value={draft.name}
-                  onChange={(e) => setDraft(d => ({...d, name: e.target.value}))}
-                />
-
-                <div className="flex gap-2">
-                  <input className="flex-1 rounded-lg border p-2 bg-transparent"
-                    placeholder="Address"
-                    value={draft.address}
-                    onChange={(e) => setDraft(d => ({...d, address: e.target.value}))}
-                  />
-                  <button
-                    className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
-                    onClick={geocodeAddress}
-                    type="button"
-                  >
-                    Geocode
-                  </button>
-                </div>
-                {geoStatus ? <div className="text-xs opacity-80">{geoStatus}</div> : null}
-
-                <textarea className="w-full rounded-lg border p-2 bg-transparent"
-                  placeholder="Happy hour details"
-                  rows={3}
-                  value={draft.happy_hour}
-                  onChange={(e) => setDraft(d => ({...d, happy_hour: e.target.value}))}
-                />
-
-                <div>
-                  <div className="text-sm font-medium mb-2">Days</div>
-                  <div className="flex flex-wrap gap-2">
-                    {DAYS.map((d) => (
-                      <label key={d.key} className="flex items-center gap-2 text-sm border rounded-full px-3 py-1 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={draft.days.includes(d.key)}
-                          onChange={() => toggleDay(d.key)}
-                        />
-                        {d.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <div className="text-xs opacity-70 mb-1">Start</div>
-                    <input className="w-full rounded-lg border p-2 bg-transparent"
-                      type="time"
-                      value={draft.start_time}
-                      onChange={(e) => setDraft(d => ({...d, start_time: e.target.value}))}
-                    />
-                  </div>
-                  <div>
-                    <div className="text-xs opacity-70 mb-1">End</div>
-                    <input className="w-full rounded-lg border p-2 bg-transparent"
-                      type="time"
-                      value={draft.end_time}
-                      onChange={(e) => setDraft(d => ({...d, end_time: e.target.value}))}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <input className="w-full rounded-lg border p-2 bg-transparent"
-                    placeholder="Lat"
-                    value={draft.lat}
-                    onChange={(e) => setDraft(d => ({...d, lat: e.target.value}))}
-                  />
-                  <input className="w-full rounded-lg border p-2 bg-transparent"
-                    placeholder="Lon"
-                    value={draft.lon}
-                    onChange={(e) => setDraft(d => ({...d, lon: e.target.value}))}
-                  />
-                </div>
-
-                {saveStatus ? <div className="text-xs opacity-80">{saveStatus}</div> : null}
-              </div>
-
-              <div className="p-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-2">
-                <button
-                  className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
-                  onClick={() => setIsAddOpen(false)}
-                  type="button"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="rounded-lg px-3 py-2 bg-black text-white dark:bg-white dark:text-black"
-                  onClick={saveNewLocation}
-                  type="button"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
 
       {/* Optional: Edit extended fields below table */}
       {editingId ? (
