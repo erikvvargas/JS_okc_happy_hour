@@ -54,25 +54,25 @@ function MapBackgroundClick({ onBackgroundClick }) {
 }
 
 export default function Map({ locations, onSelect, selected, theme, onBackgroundClick }) {
-  // const isDark = theme === "dark";
+  const isDark = theme === "dark";
 
-  // const tileUrl = isDark
-  //   ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-  //   : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-
-  // const tileAttr =
-  //   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
-
-  const token = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
-
-  const styleId = isDark ? "mapbox/dark-v11" : "mapbox/streets-v12";
-
-  // Mapbox raster tiles from styles require tileSize=512 and zoomOffset=-1
-  const tileUrl =
-    `https://api.mapbox.com/styles/v1/${styleId}/tiles/512/{z}/{x}/{y}@2x?access_token=${token}`;
+  const tileUrl = isDark
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
   const tileAttr =
-    '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+  // const token = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
+
+  // const styleId = isDark ? "mapbox/dark-v11" : "mapbox/streets-v12";
+
+  // // Mapbox raster tiles from styles require tileSize=512 and zoomOffset=-1
+  // const tileUrl =
+  //   `https://api.mapbox.com/styles/v1/${styleId}/tiles/512/{z}/{x}/{y}@2x?access_token=${token}`;
+
+  // const tileAttr =
+  //   '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 
 
@@ -82,14 +82,14 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
     zoom={13} 
     className="h-full w-full"
     zoomControl={false}>
-      {/* <TileLayer url={tileUrl} attribution={tileAttr} /> */}
-      <TileLayer
+      <TileLayer url={tileUrl} attribution={tileAttr} />
+      {/* <TileLayer
         url={tileUrl}
         attribution={tileAttr}
         tileSize={512}
         zoomOffset={-1}
         maxZoom={20}
-      />
+      /> */}
 
       <FlyToSelected selected={selected} />
       <MapBackgroundClick onBackgroundClick={onBackgroundClick} />
