@@ -108,9 +108,9 @@ def admin_list(_: bool = Depends(require_admin)):
 
 @app.post("/admin/locations")
 async def admin_add(payload: dict, _: bool = Depends(require_admin)):
-    create_location(payload)
+    created = create_location(payload)
     await invalidate_locations_cache()
-    return {"ok": True}
+    return {"ok": True, "id": created}
 
 @app.put("/admin/locations/{loc_id}")
 async def admin_update(loc_id: str, payload: dict, _: bool = Depends(require_admin)):

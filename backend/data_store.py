@@ -6,6 +6,7 @@ from sqlalchemy import select, delete, update
 from db import SessionLocal
 from models import Location
 from datetime import datetime, timezone, time
+from uuid import uuid4
 # SHEET_NAME = "happy_hour_data"
 # WORKSHEET_NAME = "Sheet1"
 
@@ -84,8 +85,9 @@ def load_locations():
 
 def create_location(payload: dict):
     with SessionLocal() as db:
+        loc_id = str(payload.get("id") or uuid4())
         loc = Location(
-            id=str(payload["id"]),
+            id=loc_id,
             name=str(payload["name"]),
             address=payload.get("address"),
             lat=float(payload["lat"]),
