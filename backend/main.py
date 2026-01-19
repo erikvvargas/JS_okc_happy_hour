@@ -16,6 +16,25 @@ MAPBOX_TOKEN = os.getenv("MAPBOX_ACCESS_TOKEN")
 if not MAPBOX_TOKEN:
     raise RuntimeError("Missing MAPBOX_ACCESS_TOKEN")
 
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    # allow_origins=[
+    #     "http://localhost:5173", 
+    #     "http://127.0.0.1:5173",
+    #     "http://192.168.1.180:5173"
+    # ],  
+    allow_origins=["https://js-okc-happy-hour.vercel.app/"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class LoginReq(BaseModel):
+    password: str
+
 @app.get("/admin/geocode")
 async def admin_geocode(q: str, _: bool = Depends(require_admin)):
     # q is an address string like "123 Main St, Oklahoma City, OK"
@@ -57,24 +76,6 @@ async def admin_geocode(q: str, _: bool = Depends(require_admin)):
         "lon": lon,
         "place_name": f.get("place_name"),
     }
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    # allow_origins=[
-    #     "http://localhost:5173", 
-    #     "http://127.0.0.1:5173",
-    #     "http://192.168.1.180:5173"
-    # ],  
-    allow_origins=["https://js-okc-happy-hour.vercel.app/"],
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class LoginReq(BaseModel):
-    password: str
 
 @app.post("/auth/login")
 def login(req: LoginReq):
