@@ -7,8 +7,56 @@ from cache import CACHE_KEY_LOCATIONS, CACHE_TTL_SECONDS, cache_get_json, cache_
 # and your existing load function, e.g. load_locations()
 from auth import create_token, require_admin
 from data_store import load_locations, create_location, update_location, delete_location
+import httpx
+from urllib.parse import quote
+
 
 load_dotenv()
+MAPBOX_TOKEN = os.getenv("MAPBOX_ACCESS_TOKEN")
+if not MAPBOX_TOKEN:
+    raise RuntimeError("Missing MAPBOX_ACCESS_TOKEN")
+
+@app.get("/admin/geocode")
+async def admin_geocode(q: str, _: bool = Depends(require_admin)):
+    # q is an address string like "123 Main St, Oklahoma City, OK"
+    if not q or len(q.strip()) < 5:
+        raise HTTPException(status_code=400, detail="Query too short")
+
+    # Bias results toward OKC area; optional but helpful
+    # Mapbox expects lon,lat for proximity
+    proximity = "-97.5164,35.4676"
+
+    url = (
+        "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+        f"{quote(q)}.json"
+    )
+
+    params = {
+        "access_token": MAPBOX_TOKEN,
+        "limit": 1,
+        "proximity": proximity,
+    }
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(url, params=params)
+
+    if r.status_code != 200:
+        raise HTTPException(status_code=502, detail="Geocoding provider error")
+
+    data = r.json()
+    feats = data.get("features") or []
+    if not feats:
+        return {"ok": True, "found": False}
+
+    f = feats[0]
+    lon, lat = f["center"]
+    return {
+        "ok": True,
+        "found": True,
+        "lat": lat,
+        "lon": lon,
+        "place_name": f.get("place_name"),
+    }
 
 app = FastAPI()
 app.add_middleware(
@@ -74,3 +122,4 @@ async def admin_delete(loc_id: str, _: bool = Depends(require_admin)):
     delete_location(loc_id)
     await invalidate_locations_cache()
     return {"ok": True}
+
