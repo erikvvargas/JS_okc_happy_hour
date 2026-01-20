@@ -152,7 +152,7 @@ function App() {
       <button
         type="button"
         onClick={() => setSubmitOpen(true)}
-        className="rounded-full px-3 py-2 text-sm border bg-white/90 dark:bg-gray-900/90 hover:bg-black/5 dark:hover:bg-white/10"
+        className="absolute top-4 left-[100px] md:left-[400px] z-[1300] rounded-full px-3 py-2 text-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-black/10 dark:border-white/10 shadow-md text-gray-900 dark:text-gray-100"
       >
         Submit
       </button>
