@@ -23,3 +23,25 @@ class Location(Base):
     # description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+class Submission(Base):
+    __tablename__ = "submissions"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    lon: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    happy_hour: Mapped[str | None] = mapped_column(Text, nullable=True)
+    days: Mapped[str | None] = mapped_column(Text, nullable=True)
+    start_time: Mapped[object | None] = mapped_column(Time, nullable=True)
+    end_time: Mapped[object | None] = mapped_column(Time, nullable=True)
+
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="pending")
+
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    

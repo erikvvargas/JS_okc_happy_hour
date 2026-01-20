@@ -4,9 +4,8 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from cache import CACHE_KEY_LOCATIONS, CACHE_TTL_SECONDS, cache_get_json, cache_set_json, invalidate_locations_cache
-# and your existing load function, e.g. load_locations()
 from auth import create_token, require_admin
-from data_store import load_locations, create_location, update_location, delete_location
+from data_store import load_locations, create_location, update_location, delete_location, create_submission, list_submissions, approve_submission, reject_submission
 import httpx
 from urllib.parse import quote
 
@@ -20,11 +19,7 @@ if not MAPBOX_TOKEN:
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=[
-    #     "http://localhost:5173", 
-    #     "http://127.0.0.1:5173",
-    #     "http://192.168.1.180:5173"
-    # ],  
+
     allow_origins=["https://okc-happy-hour.vercel.app/"],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
@@ -89,7 +84,7 @@ async def locations():
     if cached is not None:
         return cached
 
-    data = load_locations()  # <-- your existing Google Sheets -> list[dict]
+    data = load_locations()  
     await cache_set_json(CACHE_KEY_LOCATIONS, data, CACHE_TTL_SECONDS)
     return data
 
@@ -124,3 +119,27 @@ async def admin_delete(loc_id: str, _: bool = Depends(require_admin)):
     await invalidate_locations_cache()
     return {"ok": True}
 
+
+# user related submission routing goes here
+@app.post("/submit")
+async def submit(payload: dict):
+    # minimal validation
+    if not payload.get("name"):
+        raise HTTPException(400, "name is required")
+    sub_id = create_submission(payload)
+    return {"ok": True, "id": sub_id}
+
+@app.get("/admin/submissions")
+def admin_submissions(status: str = "pending", _: bool = Depends(require_admin)):
+    return list_submissions(status=status)
+
+@app.post("/admin/submissions/{sub_id}/approve")
+async def admin_approve(sub_id: str, _: bool = Depends(require_admin)):
+    approve_submission(sub_id)
+    await invalidate_locations_cache()
+    return {"ok": True}
+
+@app.post("/admin/submissions/{sub_id}/reject")
+def admin_reject(sub_id: str, _: bool = Depends(require_admin)):
+    reject_submission(sub_id)
+    return {"ok": True}

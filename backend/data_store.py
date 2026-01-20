@@ -1,30 +1,11 @@
 import os, json
-# import gspread
 import pandas as pd
-# from google.oauth2.service_account import Credentials
 from sqlalchemy import select, delete, update
 from db import SessionLocal
-from models import Location
+from models import Location, Submission
 from datetime import datetime, timezone, time
 from uuid import uuid4
-# SHEET_NAME = "happy_hour_data"
-# WORKSHEET_NAME = "Sheet1"
 
-# def get_client():
-#     creds_dict = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"])
-#     creds = Credentials.from_service_account_info(
-#         creds_dict,
-#         scopes=[
-#             "https://www.googleapis.com/auth/spreadsheets",
-#             "https://www.googleapis.com/auth/drive",
-#         ],
-#     )
-#     return gspread.authorize(creds)
-
-# def get_ws():
-#     client = get_client()
-#     sheet = client.open(SHEET_NAME)
-#     return sheet.worksheet(WORKSHEET_NAME)
 
 def _time_to_str(t):
     if t is None:
@@ -63,25 +44,10 @@ def load_locations():
             "start_time": _time_to_str(r.start_time),
             "end_time": _time_to_str(r.end_time),
             "happy_hour": r.happy_hour,
-            # "description": r.description,
             "updated_at": (r.updated_at.isoformat() if r.updated_at else None),
         })
     return out
 
-# def _header(ws):
-#     return ws.row_values(1)
-
-# def _find_row_index_by_id(ws, loc_id: str) -> int:
-#     # Find row index where column 'id' equals loc_id
-#     headers = _header(ws)
-#     if "id" not in headers:
-#         raise ValueError("Sheet must have an 'id' column")
-#     id_col = headers.index("id") + 1  # 1-based
-#     col_values = ws.col_values(id_col)  # includes header at index 0
-#     for i, v in enumerate(col_values[1:], start=2):  # start=2 => sheet row number
-#         if str(v).strip() == str(loc_id).strip():
-#             return i
-#     raise KeyError(f"ID not found: {loc_id}")
 
 def create_location(payload: dict):
     with SessionLocal() as db:
@@ -129,3 +95,91 @@ def delete_location(loc_id: str):
         db.execute(delete(Location).where(Location.id == loc_id))
         db.commit()
     return {"ok": True}
+
+
+# functions related to user actions goes here
+
+def create_submission(payload: dict) -> str:
+    sub_id = str(uuid4())
+
+    with SessionLocal() as db:
+        sub = Submission(
+            id=sub_id,
+            name=str(payload["name"]).strip(),
+            address=(payload.get("address") or "").strip() or None,
+            lat=float(payload["lat"]) if payload.get("lat") not in (None, "") else None,
+            lon=float(payload["lon"]) if payload.get("lon") not in (None, "") else None,
+            happy_hour=(payload.get("happy_hour") or "").strip() or None,
+            days=payload.get("days"),
+            start_time=_parse_time_hhmm(payload.get("start_time")),
+            end_time=_parse_time_hhmm(payload.get("end_time")),
+            note=(payload.get("note") or "").strip() or None,
+            status="pending",
+            submitted_at=datetime.now(timezone.utc),
+        )
+        db.add(sub)
+        db.commit()
+    return sub_id
+
+def list_submissions(status: str = "pending"):
+    with SessionLocal() as db:
+        rows = db.execute(
+            select(Submission).where(Submission.status == status)
+        ).scalars().all()
+
+    def t2s(t): return t.strftime("%H:%M") if t else None
+
+    return [{
+        "id": r.id,
+        "name": r.name,
+        "address": r.address,
+        "lat": r.lat,
+        "lon": r.lon,
+        "happy_hour": r.happy_hour,
+        "days": r.days,
+        "start_time": t2s(r.start_time),
+        "end_time": t2s(r.end_time),
+        "note": r.note,
+        "status": r.status,
+        "submitted_at": r.submitted_at.isoformat() if r.submitted_at else None,
+        "reviewed_at": r.reviewed_at.isoformat() if r.reviewed_at else None,
+    } for r in rows]
+
+def approve_submission(sub_id: str):
+    with SessionLocal() as db:
+        sub = db.execute(select(Submission).where(Submission.id == sub_id)).scalar_one()
+
+        # Reuse create_location() by building a payload
+        loc_payload = {
+            "name": sub.name,
+            "address": sub.address,
+            "lat": sub.lat,
+            "lon": sub.lon,
+            "days": sub.days,
+            "start_time": sub.start_time.strftime("%H:%M") if sub.start_time else None,
+            "end_time": sub.end_time.strftime("%H:%M") if sub.end_time else None,
+            "happy_hour": sub.happy_hour,
+        }
+
+        create_location(loc_payload)  # existing Neon insert for locations
+
+        db.execute(
+            update(Submission)
+            .where(Submission.id == sub_id)
+            .values(status="approved", reviewed_at=datetime.now(timezone.utc))
+        )
+        db.commit()
+
+def reject_submission(sub_id: str):
+    with SessionLocal() as db:
+        result = db.execute(
+            update(Submission)
+            .where(Submission.id == sub_id)
+            .values(
+                status="rejected",
+                reviewed_at=datetime.now(timezone.utc),
+            )
+        )
+        if result.rowcount == 0:
+            raise ValueError("Submission not found")
+        db.commit()

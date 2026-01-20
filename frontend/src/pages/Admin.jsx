@@ -127,50 +127,6 @@ export default function Admin() {
     setDraft(emptyDraft);
     await load(); // reload admin table
   }
-// ******************************************************************
-
-  // async function saveNewLocation() {
-  //   try {
-  //     setSaveStatus("");
-
-  //     console.log("Saving new location…", draft);
-
-  //     const payload = {
-  //       // if you currently require id, include it here or fix backend (recommended below)
-  //       name: draft.name.trim(),
-  //       address: draft.address.trim(),
-  //       happy_hour: draft.happy_hour.trim(),
-  //       days: serializeDays(draft.days),
-  //       start_time: draft.start_time,
-  //       end_time: draft.end_time,
-  //       lat: Number(draft.lat),
-  //       lon: Number(draft.lon),
-  //     };
-
-  //     const res = await fetch(`${API_BASE}/admin/locations`, {
-  //       method: "POST",
-  //       headers: { ...authHeaders, "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     if (!res.ok) {
-  //       const text = await res.text(); // render error even if not JSON
-  //       console.error("Save failed:", res.status, text);
-  //       setSaveStatus(`Save failed (${res.status}): ${text.slice(0, 200)}`);
-  //       return;
-  //     }
-
-  //     setSaveStatus("Saved ✓");
-  //     setIsAddOpen(false);
-  //     setDraft(emptyDraft);
-  //     await load();
-  //   } catch (e) {
-  //     console.error("Save exception:", e);
-  //     setSaveStatus(`Save error: ${String(e?.message || e)}`);
-  //   }
-  // }
-
-
 
 
   async function load() {

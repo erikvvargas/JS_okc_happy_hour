@@ -37,7 +37,7 @@ function resolveSelectedTimeMinutes(timeMode, selectedTime) {
   return timeToMinutes(selectedTime);
 }
 
-// Normalize your sheet field `days` into ["Mon","Tue",...]
+
 function parseDays(daysValue) {
   if (!daysValue) return [];
   if (Array.isArray(daysValue)) return daysValue;
