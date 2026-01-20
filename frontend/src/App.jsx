@@ -6,7 +6,7 @@ import MobileDrawer from "./components/MobileDrawer";
 import DesktopFilters from "./components/DesktopFilters";
 import MobileFilters from "./components/MobileFilters";
 import { API_BASE } from "./lib/api";
-
+import SubmitLocationModal from "./components/SubmitLocationModal";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
