@@ -87,6 +87,8 @@ function App() {
   const resolvedDay = resolveSelectedDay(selectedDay);
   const resolvedTimeMin = resolveSelectedTimeMinutes(timeMode, selectedTime);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [submitOpen, setSubmitOpen] = useState(false);
+
   const locationsWithStatus = locations.map((loc) => ({
     ...loc,
     _status: getStatus(loc, resolvedDay, resolvedTimeMin),
@@ -147,6 +149,13 @@ function App() {
         List
       </button>
 
+      <button
+        type="button"
+        onClick={() => setSubmitOpen(true)}
+        className="rounded-full px-3 py-2 text-sm border bg-white/90 dark:bg-gray-900/90 hover:bg-black/5 dark:hover:bg-white/10"
+      >
+        Submit
+      </button>
 
       <DesktopFilters
         selectedDay={selectedDay}
@@ -174,6 +183,8 @@ function App() {
       >
         {theme === "light" ? <Moon /> : <Sun />}
       </button>
+
+      <SubmitLocationModal open={submitOpen} onClose={() => setSubmitOpen(false)} />
 
       {/* Desktop sidebar + Mobile drawer */}
 

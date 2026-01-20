@@ -20,7 +20,8 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
 
-    allow_origins=["https://okc-happy-hour.vercel.app/"],
+    allow_origins=["https://okc-happy-hour.vercel.app/", 
+                   "https://okc-happy-hour-git-userform-eriks-projects-ebcf51b4.vercel.app/"],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],

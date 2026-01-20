@@ -1,0 +1,247 @@
+import { useMemo, useState } from "react";
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function serializeDays(days) {
+  const order = DAYS;
+  const sorted = [...days].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  return sorted.join(",");
+}
+
+export default function SubmitLocationModal({ open, onClose }) {
+  const API_BASE = import.meta.env.VITE_API_BASE;
+
+  const empty = useMemo(
+    () => ({
+      name: "",
+      address: "",
+      happy_hour: "",
+      days: [],
+      start_time: "",
+      end_time: "",
+      note: "",
+    }),
+    []
+  );
+
+  const [draft, setDraft] = useState(empty);
+  const [geoStatus, setGeoStatus] = useState("");
+  const [latLon, setLatLon] = useState({ lat: "", lon: "" });
+  const [status, setStatus] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  if (!open) return null;
+
+  const toggleDay = (d) => {
+    setDraft((x) => {
+      const has = x.days.includes(d);
+      return { ...x, days: has ? x.days.filter((k) => k !== d) : [...x.days, d] };
+    });
+  };
+
+//   async function geocode() {
+//     setGeoStatus("");
+//     setStatus("");
+
+//     const q = draft.address.trim();
+//     if (!q) {
+//       setGeoStatus("Enter an address first.");
+//       return;
+//     }
+
+//     // If you have a PUBLIC geocode endpoint, use it.
+//     // If geocode is admin-only, remove this feature for public and just submit address.
+//     try {
+//       const url = new URL(`${API_BASE}/geocode`); // <-- change if your public endpoint name differs
+//       url.searchParams.set("q", q);
+
+//       const res = await fetch(url.toString());
+//       if (!res.ok) {
+//         setGeoStatus(`Geocode failed (HTTP ${res.status})`);
+//         return;
+//       }
+//       const data = await res.json();
+//       if (!data.found) {
+//         setGeoStatus("No match found.");
+//         return;
+//       }
+//       setLatLon({ lat: String(data.lat), lon: String(data.lon) });
+//       setGeoStatus("Found ✓");
+//     } catch (e) {
+//       setGeoStatus(`Geocode error: ${String(e?.message || e)}`);
+//     }
+//   }
+
+  async function submit() {
+    setStatus("");
+    setGeoStatus("");
+
+    // validation
+    if (!draft.name.trim()) return setStatus("Name is required.");
+    if (!draft.happy_hour.trim()) return setStatus("Happy hour details are required.");
+    if (draft.days.length === 0) return setStatus("Pick at least one day.");
+    if (!draft.start_time || !draft.end_time) return setStatus("Start and end time required.");
+
+    // lat/lon optional; if you want to require geocode, enforce it here:
+    // if (!latLon.lat || !latLon.lon) return setStatus("Please geocode the address first.");
+
+    const payload = {
+      name: draft.name.trim(),
+      address: draft.address.trim() || null,
+      happy_hour: draft.happy_hour.trim(),
+      days: serializeDays(draft.days),
+      start_time: draft.start_time, // "HH:MM"
+      end_time: draft.end_time,     // "HH:MM"
+      lat: latLon.lat ? Number(latLon.lat) : null,
+      lon: latLon.lon ? Number(latLon.lon) : null,
+      note: draft.note.trim() || null,
+    };
+
+    try {
+      setSubmitting(true);
+      const res = await fetch(`${API_BASE}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setStatus(`Submit failed (${res.status}): ${text.slice(0, 200)}`);
+        return;
+      }
+
+      setStatus("Thanks! Submitted for review ✓");
+      // reset and close after a moment
+      setDraft(empty);
+      setLatLon({ lat: "", lon: "" });
+      setTimeout(() => onClose(), 600);
+    } catch (e) {
+      setStatus(`Submit error: ${String(e?.message || e)}`);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[3000]">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/10 shadow-xl">
+          <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
+            <div className="font-semibold">Submit a Happy Hour</div>
+            <button
+              type="button"
+              className="rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+              onClick={onClose}
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="p-4 space-y-3">
+            <input
+              className="w-full rounded-lg border p-2 bg-transparent"
+              placeholder="Place name"
+              value={draft.name}
+              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+            />
+
+            <div className="flex gap-2">
+              <input
+                className="flex-1 rounded-lg border p-2 bg-transparent"
+                placeholder="Address (optional but helpful)"
+                value={draft.address}
+                onChange={(e) => setDraft((d) => ({ ...d, address: e.target.value }))}
+              />
+              {/* <button
+                type="button"
+                className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
+                onClick={geocode}
+              >
+                Geocode
+              </button> */}
+            </div>
+
+            {/* {geoStatus ? <div className="text-xs opacity-80">{geoStatus}</div> : null}
+            {(latLon.lat && latLon.lon) ? (
+              <div className="text-xs opacity-70">
+                lat/lon: {latLon.lat}, {latLon.lon}
+              </div>
+            ) : null} */}
+
+            <textarea
+              className="w-full rounded-lg border p-2 bg-transparent"
+              placeholder="Happy hour details (deals, times, etc.)"
+              rows={3}
+              value={draft.happy_hour}
+              onChange={(e) => setDraft((d) => ({ ...d, happy_hour: e.target.value }))}
+            />
+
+            <div>
+              <div className="text-sm font-medium mb-2">Days</div>
+              <div className="flex flex-wrap gap-2">
+                {DAYS.map((d) => (
+                  <label key={d} className="flex items-center gap-2 text-sm border rounded-full px-3 py-1 cursor-pointer">
+                    <input type="checkbox" checked={draft.days.includes(d)} onChange={() => toggleDay(d)} />
+                    {d}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs opacity-70 mb-1">Start</div>
+                <input
+                  className="w-full rounded-lg border p-2 bg-transparent"
+                  type="time"
+                  value={draft.start_time}
+                  onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
+                />
+              </div>
+              <div>
+                <div className="text-xs opacity-70 mb-1">End</div>
+                <input
+                  className="w-full rounded-lg border p-2 bg-transparent"
+                  type="time"
+                  value={draft.end_time}
+                  onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <textarea
+              className="w-full rounded-lg border p-2 bg-transparent"
+              placeholder="Optional note (e.g., 'deal is bar-only', 'in the lounge', etc.)"
+              rows={2}
+              value={draft.note}
+              onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
+            />
+
+            {status ? <div className="text-xs opacity-80">{status}</div> : null}
+          </div>
+
+          <div className="p-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="rounded-lg px-3 py-2 bg-black text-white dark:bg-white dark:text-black disabled:opacity-60"
+              onClick={submit}
+              disabled={submitting}
+            >
+              {submitting ? "Submitting…" : "Submit"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
