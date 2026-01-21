@@ -18,6 +18,8 @@ const DAYS = [
 
 export default function Admin() {
   const [rows, setRows] = useState([]);
+  const [tab, setTab] = useState("locations"); // "locations" | "submissions"
+  const [submissions, setSubmissions] = useState([]);
   const [editingId, setEditingId] = useState(null);
   // const [draft, setDraft] = useState({});
   const [status, setStatus] = useState("");
@@ -140,10 +142,77 @@ export default function Admin() {
     setRows(data);
   }
 
+  async function loadSubmissions() {
+    setStatus("");
+    const res = await fetch(`${API_BASE}/admin/submissions?status=pending`, {
+      headers: authHeaders,
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+
+    if (!res.ok) {
+      setStatus(`Failed to load submissions (HTTP ${res.status})`);
+      return;
+    }
+
+    const data = await res.json();
+    setSubmissions(Array.isArray(data) ? data : []);
+  }
+
+  async function approveSubmission(id) {
+    setStatus("Approving...");
+    const res = await fetch(`${API_BASE}/admin/submissions/${id}/approve`, {
+      method: "POST",
+      headers: authHeaders,
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    if (!res.ok) {
+      setStatus(`Approve failed (HTTP ${res.status})`);
+      return;
+    }
+
+    setStatus("Approved ✓");
+    await loadSubmissions();
+    await load(); // refresh locations list too (new one was added)
+  }
+
+  async function rejectSubmission(id) {
+    if (!confirm("Reject this submission?")) return;
+    setStatus("Rejecting...");
+
+    const res = await fetch(`${API_BASE}/admin/submissions/${id}/reject`, {
+      method: "POST",
+      headers: authHeaders,
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    if (!res.ok) {
+      setStatus(`Reject failed (HTTP ${res.status})`);
+      return;
+    }
+
+    setStatus("Rejected.");
+    await loadSubmissions();
+  }
+
+
+
   useEffect(() => {
-    load();
+    if (tab === "locations") load();
+    if (tab === "submissions") loadSubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tab]);
+
 
   
 
@@ -236,7 +305,38 @@ export default function Admin() {
   return (
     <div className="min-h-screen p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Manage Locations</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold">
+            {tab === "locations" ? "Manage Locations" : "Review Submissions"}
+          </h1>
+
+          <div className="flex rounded-full border border-black/10 dark:border-white/10 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setTab("locations")}
+              className={
+                "px-3 py-1 text-sm " +
+                (tab === "locations"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "hover:bg-black/5 dark:hover:bg-white/10")
+              }
+            >
+              Locations
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("submissions")}
+              className={
+                "px-3 py-1 text-sm " +
+                (tab === "submissions"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "hover:bg-black/5 dark:hover:bg-white/10")
+              }
+            >
+              Submissions
+            </button>
+          </div>
+        </div>
 
         <div className="flex items-center gap-3">
           {status ? <span className="text-sm opacity-80">{status}</span> : null}
@@ -251,172 +351,233 @@ export default function Admin() {
           </button>
         </div>
       </div>
+      
+      {tab === "locations" && (
+        <>
+        <div className="overflow-auto rounded border border-black/10 dark:border-white/10">
+          <table className="min-w-full text-sm">
+            <thead className="bg-black/5 dark:bg-white/10">
+              <tr>
+                <th className="text-left p-2">Name</th>
+                <th className="text-left p-2">Address</th>
+                <th className="text-left p-2">Days</th>
+                <th className="text-left p-2">Start</th>
+                <th className="text-left p-2">End</th>
+                <th className="text-left p-2">Lat</th>
+                <th className="text-left p-2">Lon</th>
+                <th className="p-2"></th>
+              </tr>
+            </thead>
 
-      <div className="overflow-auto rounded border border-black/10 dark:border-white/10">
-        <table className="min-w-full text-sm">
-          <thead className="bg-black/5 dark:bg-white/10">
-            <tr>
-              <th className="text-left p-2">Name</th>
-              <th className="text-left p-2">Address</th>
-              <th className="text-left p-2">Days</th>
-              <th className="text-left p-2">Start</th>
-              <th className="text-left p-2">End</th>
-              <th className="text-left p-2">Lat</th>
-              <th className="text-left p-2">Lon</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
+            <tbody>
+              {rows.map((r) => {
+                const isEditing = editingId === r.id;
 
-          <tbody>
-            {rows.map((r) => {
-              const isEditing = editingId === r.id;
+                return (
+                  <tr
+                    key={r.id}
+                    className="border-t border-black/10 dark:border-white/10 align-top"
+                  >
+                    {/* Name */}
+                    <td className="p-2 min-w-[200px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.name}
+                          onChange={(e) => updateDraft("name", e.target.value)}
+                        />
+                      ) : (
+                        r.name
+                      )}
+                    </td>
 
-              return (
-                <tr
-                  key={r.id}
-                  className="border-t border-black/10 dark:border-white/10 align-top"
-                >
-                  {/* Name */}
-                  <td className="p-2 min-w-[200px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.name}
-                        onChange={(e) => updateDraft("name", e.target.value)}
-                      />
-                    ) : (
-                      r.name
-                    )}
-                  </td>
+                    {/* Address */}
+                    <td className="p-2 min-w-[260px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.address}
+                          onChange={(e) => updateDraft("address", e.target.value)}
+                        />
+                      ) : (
+                        r.address
+                      )}
+                    </td>
 
-                  {/* Address */}
-                  <td className="p-2 min-w-[260px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.address}
-                        onChange={(e) => updateDraft("address", e.target.value)}
-                      />
-                    ) : (
-                      r.address
-                    )}
-                  </td>
+                    {/* Days */}
+                    <td className="p-2 min-w-[140px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.days}
+                          onChange={(e) => updateDraft("days", e.target.value)}
+                          placeholder="Mon,Tue,..."
+                        />
+                      ) : (
+                        r.days
+                      )}
+                    </td>
 
-                  {/* Days */}
-                  <td className="p-2 min-w-[140px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.days}
-                        onChange={(e) => updateDraft("days", e.target.value)}
-                        placeholder="Mon,Tue,..."
-                      />
-                    ) : (
-                      r.days
-                    )}
-                  </td>
+                    {/* Start */}
+                    <td className="p-2 min-w-[90px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.start_time}
+                          onChange={(e) => updateDraft("start_time", e.target.value)}
+                          placeholder="16:00"
+                        />
+                      ) : (
+                        r.start_time
+                      )}
+                    </td>
 
-                  {/* Start */}
-                  <td className="p-2 min-w-[90px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.start_time}
-                        onChange={(e) => updateDraft("start_time", e.target.value)}
-                        placeholder="16:00"
-                      />
-                    ) : (
-                      r.start_time
-                    )}
-                  </td>
+                    {/* End */}
+                    <td className="p-2 min-w-[90px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.end_time}
+                          onChange={(e) => updateDraft("end_time", e.target.value)}
+                          placeholder="18:00"
+                        />
+                      ) : (
+                        r.end_time
+                      )}
+                    </td>
 
-                  {/* End */}
-                  <td className="p-2 min-w-[90px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.end_time}
-                        onChange={(e) => updateDraft("end_time", e.target.value)}
-                        placeholder="18:00"
-                      />
-                    ) : (
-                      r.end_time
-                    )}
-                  </td>
+                    {/* Lat */}
+                    <td className="p-2 min-w-[120px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.lat}
+                          onChange={(e) => updateDraft("lat", e.target.value)}
+                        />
+                      ) : (
+                        r.lat
+                      )}
+                    </td>
 
-                  {/* Lat */}
-                  <td className="p-2 min-w-[120px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.lat}
-                        onChange={(e) => updateDraft("lat", e.target.value)}
-                      />
-                    ) : (
-                      r.lat
-                    )}
-                  </td>
+                    {/* Lon */}
+                    <td className="p-2 min-w-[120px]">
+                      {isEditing ? (
+                        <input
+                          className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
+                          value={draft.lon}
+                          onChange={(e) => updateDraft("lon", e.target.value)}
+                        />
+                      ) : (
+                        r.lon
+                      )}
+                    </td>
 
-                  {/* Lon */}
-                  <td className="p-2 min-w-[120px]">
-                    {isEditing ? (
-                      <input
-                        className="w-full rounded border border-black/10 dark:border-white/10 bg-transparent p-1"
-                        value={draft.lon}
-                        onChange={(e) => updateDraft("lon", e.target.value)}
-                      />
-                    ) : (
-                      r.lon
-                    )}
-                  </td>
+                    {/* Actions */}
+                    <td className="p-2 text-right min-w-[180px]">
+                      {isEditing ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => saveEdit(r.id)}
+                            className="px-2 py-1 rounded bg-black text-white dark:bg-white dark:text-black"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="px-2 py-1 rounded border border-black/10 dark:border-white/10"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => startEdit(r)}
+                            className="underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDelete(r.id)}
+                            className="text-red-500 underline"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-                  {/* Actions */}
-                  <td className="p-2 text-right min-w-[180px]">
-                    {isEditing ? (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => saveEdit(r.id)}
-                          className="px-2 py-1 rounded bg-black text-white dark:bg-white dark:text-black"
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          className="px-2 py-1 rounded border border-black/10 dark:border-white/10"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-end gap-3">
-                        <button
-                          onClick={() => startEdit(r)}
-                          className="underline"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => onDelete(r.id)}
-                          className="text-red-500 underline"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+        <button
+          onClick={() => { setDraft(emptyDraft); setGeoStatus(""); setSaveStatus(""); setIsAddOpen(true); }}
+          className="rounded-full px-3 py-2 text-sm bg-black text-white dark:bg-white dark:text-black"
+        >
+          + Add
+        </button>
 
-      <button
-        onClick={() => { setDraft(emptyDraft); setGeoStatus(""); setSaveStatus(""); setIsAddOpen(true); }}
-        className="rounded-full px-3 py-2 text-sm bg-black text-white dark:bg-white dark:text-black"
-      >
-        + Add
-      </button>
+        </>
+      )}
+      
+      {tab === "submissions" && (
+        <div className="space-y-3">
+          {submissions.length === 0 ? (
+            <div className="rounded border border-black/10 dark:border-white/10 p-4 opacity-80">
+              No pending submissions.
+            </div>
+          ) : (
+            submissions.map((s) => (
+              <div
+                key={s.id}
+                className="rounded border border-black/10 dark:border-white/10 p-4"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="font-semibold">{s.name}</div>
+                    <div className="text-sm opacity-80">{s.address || "No address provided"}</div>
+                    <div className="text-xs opacity-70 mt-1">
+                      {s.days || "—"} · {s.start_time || "—"}–{s.end_time || "—"}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => approveSubmission(s.id)}
+                      className="rounded px-3 py-1 bg-green-600 text-white"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => rejectSubmission(s.id)}
+                      className="rounded px-3 py-1 bg-red-600 text-white"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+
+                {s.happy_hour ? (
+                  <div className="mt-3 text-sm whitespace-pre-wrap">
+                    {s.happy_hour}
+                  </div>
+                ) : null}
+
+                {s.note ? (
+                  <div className="mt-2 text-xs opacity-70">
+                    Note: {s.note}
+                  </div>
+                ) : null}
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
 
       {isAddOpen && (
