@@ -31,6 +31,13 @@ function iconForStatus(status) {
 }
 
 
+function MapTapCloser({ closeFilters }) {
+  useMapEvents({
+    click: () => closeFilters?.(),
+    dragstart: () => closeFilters?.(), // optional
+  });
+  return null;
+}
 
 function FlyToSelected({ selected }) {
   const map = useMap();
@@ -49,9 +56,11 @@ function FlyToSelected({ selected }) {
 function MapBackgroundClick({ onBackgroundClick }) {
   useMapEvents({
     click: () => onBackgroundClick?.(),
+    dragstart: () => onBackgroundClick?.(), // closes when user starts moving map
   });
   return null;
 }
+
 
 export default function Map({ locations, onSelect, selected, theme, onBackgroundClick }) {
   const isDark = theme === "dark";

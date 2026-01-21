@@ -2,14 +2,14 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import Map from "./components/Map";
 import DesktopSidebar from "./components/DesktopSidebar";
-import MobileDrawer from "./components/MobileDrawer";
+import MobileDrawer, { MobileBottomSheet } from "./components/MobileDrawer";
 import DesktopFilters from "./components/DesktopFilters";
 import MobileFilters from "./components/MobileFilters";
 import { API_BASE } from "./lib/api";
 import SubmitLocationModal from "./components/SubmitLocationModal";
+import SubmitLocationForm from "./components/SubmitLocationForm";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 
 function getTodayAbbrev() {
   return WEEKDAYS[new Date().getDay()];
@@ -36,7 +36,6 @@ function resolveSelectedTimeMinutes(timeMode, selectedTime) {
   }
   return timeToMinutes(selectedTime);
 }
-
 
 function parseDays(daysValue) {
   if (!daysValue) return [];
@@ -75,32 +74,36 @@ function getStatus(loc, dayAbbrev, timeMin) {
   return "INACTIVE";
 }
 
-
-
 function App() {
   const [theme, setTheme] = useState("light");
   const [locations, setLocations] = useState([]);
   const [selected, setSelected] = useState(null);
+
   const [selectedDay, setSelectedDay] = useState("Today");
   const [timeMode, setTimeMode] = useState("now"); // "now" | "custom"
   const [selectedTime, setSelectedTime] = useState("17:00"); // only used if custom
+
   const resolvedDay = resolveSelectedDay(selectedDay);
   const resolvedTimeMin = resolveSelectedTimeMinutes(timeMode, selectedTime);
-  const [panelOpen, setPanelOpen] = useState(false);
+
+  const [panelOpen, setPanelOpen] = useState(false);   // list/details
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const calc = () => setIsMobile(window.innerWidth < 768);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   const locationsWithStatus = locations.map((loc) => ({
     ...loc,
     _status: getStatus(loc, resolvedDay, resolvedTimeMin),
   }));
-  const closePanel = () => {
-  setSelected(null);
-  setPanelOpen(false);
-  };
 
-  const backToList = () => {
-    setSelected(null);
-  };
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
@@ -112,23 +115,18 @@ function App() {
       .catch((err) => console.error("Failed to load locations", err));
   }, []);
 
-
-  useEffect(() => {
-    if (!locations.length) return;
-    const counts = { ACTIVE: 0, UPCOMING: 0, INACTIVE: 0 };
-    for (const loc of locations) {
-      counts[getStatus(loc, resolvedDay, resolvedTimeMin)]++;
-    }
-    console.log("Filter:", { selectedDay, timeMode, selectedTime, resolvedDay, resolvedTimeMin });
-    console.log("Counts:", counts);
-  }, [locations, selectedDay, timeMode, selectedTime, resolvedDay, resolvedTimeMin]);
-
-  // const openPanel = !!selected;
-  const openPanel = panelOpen;
   const handleSelect = (loc) => {
     setSelected(loc);
     setPanelOpen(true);
   };
+
+  const closeAllOverlays = () => {
+    setSelected(null);
+    setPanelOpen(false);
+    setFiltersOpen(false);
+    setSubmitOpen(false);
+  };
+
   return (
     <div className="h-[100dvh] w-screen relative overflow-hidden bg-white dark:bg-gray-900">
       {/* MAP fills the screen */}
@@ -138,11 +136,12 @@ function App() {
           onSelect={handleSelect}
           selected={selected}
           theme={theme}
-          onBackgroundClick={() => setSelected(null)}
+          onBackgroundClick={closeAllOverlays} // closes Filters drawer on tap, plus others
         />
-
       </div>
-      <div className="absolute top-4 left-4 md:left-[320px] z-[1300] flex items-center gap-2">
+
+      {/* List + Submit pills (you can tweak spacing later) */}
+      <div className="absolute top-4 left-[92px] md:left-[320px] z-[1300] flex items-center gap-2">
         <button
           type="button"
           onClick={() => setPanelOpen(true)}
@@ -170,6 +169,8 @@ function App() {
       />
 
       <MobileFilters
+        open={filtersOpen}
+        setOpen={setFiltersOpen}
         selectedDay={selectedDay}
         setSelectedDay={setSelectedDay}
         timeMode={timeMode}
@@ -178,8 +179,30 @@ function App() {
         setSelectedTime={setSelectedTime}
       />
 
-      <SubmitLocationModal open={submitOpen} onClose={() => setSubmitOpen(false)} />
-        
+      {/* Desktop Submit modal */}
+      {!isMobile ? (
+        <SubmitLocationModal open={submitOpen} onClose={() => setSubmitOpen(false)} />
+      ) : null}
+
+      {/* Mobile Submit drawer */}
+      {isMobile ? (
+        <MobileBottomSheet
+          open={submitOpen}
+          onClose={() => setSubmitOpen(false)}
+          title="Submit a Happy Hour"
+          height="75vh"
+          zIndex={1500}
+        >
+          <div className="pb-4">
+            <SubmitLocationForm
+              showGeocode={false}
+              onCancel={() => setSubmitOpen(false)}
+              onSuccess={() => setSubmitOpen(false)}
+            />
+          </div>
+        </MobileBottomSheet>
+      ) : null}
+
       {/* Theme toggle */}
       <button
         onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -189,9 +212,7 @@ function App() {
         {theme === "light" ? <Moon /> : <Sun />}
       </button>
 
-
-      {/* Desktop sidebar + Mobile drawer */}
-
+      {/* Desktop sidebar + Mobile drawer (List/Details) */}
       {panelOpen ? (
         <DesktopSidebar
           open={panelOpen}
@@ -199,7 +220,10 @@ function App() {
           locations={locationsWithStatus}
           onSelect={handleSelect}
           onBack={() => setSelected(null)}
-          onClosePanel={() => { setSelected(null); setPanelOpen(false); }}
+          onClosePanel={() => {
+            setSelected(null);
+            setPanelOpen(false);
+          }}
         />
       ) : null}
 
@@ -216,12 +240,8 @@ function App() {
           }}
         />
       ) : null}
-
-
-
     </div>
   );
 }
-// console.log("API BASE:", import.meta.env.VITE_API_BASE);
 
 export default App;
