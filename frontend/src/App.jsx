@@ -175,6 +175,8 @@ function App() {
         setSelectedTime={setSelectedTime}
       />
 
+      <SubmitLocationModal open={submitOpen} onClose={() => setSubmitOpen(false)} />
+        
       {/* Theme toggle */}
       <button
         onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -184,7 +186,6 @@ function App() {
         {theme === "light" ? <Moon /> : <Sun />}
       </button>
 
-      <SubmitLocationModal open={submitOpen} onClose={() => setSubmitOpen(false)} />
 
       {/* Desktop sidebar + Mobile drawer */}
 

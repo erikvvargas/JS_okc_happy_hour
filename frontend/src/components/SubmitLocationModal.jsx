@@ -10,7 +10,7 @@ function serializeDays(days) {
 
 export default function SubmitLocationModal({ open, onClose }) {
   const API_BASE = import.meta.env.VITE_API_BASE;
-  const url = new URL("/submit", API_BASE).toString();
+  
 
   const empty = useMemo(
     () => ({
@@ -40,38 +40,38 @@ export default function SubmitLocationModal({ open, onClose }) {
     });
   };
 
-//   async function geocode() {
-//     setGeoStatus("");
-//     setStatus("");
+  async function geocode() {
+    setGeoStatus("");
+    setStatus("");
 
-//     const q = draft.address.trim();
-//     if (!q) {
-//       setGeoStatus("Enter an address first.");
-//       return;
-//     }
+    const q = draft.address.trim();
+    if (!q) {
+      setGeoStatus("Enter an address first.");
+      return;
+    }
 
-//     // If you have a PUBLIC geocode endpoint, use it.
-//     // If geocode is admin-only, remove this feature for public and just submit address.
-//     try {
-//       const url = new URL(`${API_BASE}/geocode`); // <-- change if your public endpoint name differs
-//       url.searchParams.set("q", q);
+    // If you have a PUBLIC geocode endpoint, use it.
+    // If geocode is admin-only, remove this feature for public and just submit address.
+    try {
+      const url = new URL(`${API_BASE}/geocode`); // <-- change if your public endpoint name differs
+      url.searchParams.set("q", q);
 
-//       const res = await fetch(url.toString());
-//       if (!res.ok) {
-//         setGeoStatus(`Geocode failed (HTTP ${res.status})`);
-//         return;
-//       }
-//       const data = await res.json();
-//       if (!data.found) {
-//         setGeoStatus("No match found.");
-//         return;
-//       }
-//       setLatLon({ lat: String(data.lat), lon: String(data.lon) });
-//       setGeoStatus("Found ✓");
-//     } catch (e) {
-//       setGeoStatus(`Geocode error: ${String(e?.message || e)}`);
-//     }
-//   }
+      const res = await fetch(url.toString());
+      if (!res.ok) {
+        setGeoStatus(`Geocode failed (HTTP ${res.status})`);
+        return;
+      }
+      const data = await res.json();
+      if (!data.found) {
+        setGeoStatus("No match found.");
+        return;
+      }
+      setLatLon({ lat: String(data.lat), lon: String(data.lon) });
+      setGeoStatus("Found ✓");
+    } catch (e) {
+      setGeoStatus(`Geocode error: ${String(e?.message || e)}`);
+    }
+  }
 
   async function submit() {
     setStatus("");
@@ -102,18 +102,18 @@ export default function SubmitLocationModal({ open, onClose }) {
       setSubmitting(true);
       const url = `${API_BASE}/submit`;
       console.log("Submitting to:", url);
-      // const res = await fetch(`${API_BASE}/submit`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(payload),
-      // });
-
-   
-      const res = await fetch(url, {
+      const res = await fetch(`${API_BASE}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+   
+      // const res = await fetch(url, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(payload),
+      // });
 
       if (!res.ok) {
         const text = await res.text();
@@ -164,21 +164,21 @@ export default function SubmitLocationModal({ open, onClose }) {
                 value={draft.address}
                 onChange={(e) => setDraft((d) => ({ ...d, address: e.target.value }))}
               />
-              {/* <button
+              <button
                 type="button"
                 className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
                 onClick={geocode}
               >
                 Geocode
-              </button> */}
+              </button>
             </div>
 
-            {/* {geoStatus ? <div className="text-xs opacity-80">{geoStatus}</div> : null}
+            {geoStatus ? <div className="text-xs opacity-80">{geoStatus}</div> : null}
             {(latLon.lat && latLon.lon) ? (
               <div className="text-xs opacity-70">
                 lat/lon: {latLon.lat}, {latLon.lon}
               </div>
-            ) : null} */}
+            ) : null}
 
             <textarea
               className="w-full rounded-lg border p-2 bg-transparent"
