@@ -10,6 +10,7 @@ function serializeDays(days) {
 
 export default function SubmitLocationModal({ open, onClose }) {
   const API_BASE = import.meta.env.VITE_API_BASE;
+  const url = new URL("/submit", API_BASE).toString();
 
   const empty = useMemo(
     () => ({
@@ -99,7 +100,16 @@ export default function SubmitLocationModal({ open, onClose }) {
 
     try {
       setSubmitting(true);
-      const res = await fetch(`${API_BASE}/submit`, {
+      const url = `${API_BASE}/submit`;
+      console.log("Submitting to:", url);
+      // const res = await fetch(`${API_BASE}/submit`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(payload),
+      // });
+
+   
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
