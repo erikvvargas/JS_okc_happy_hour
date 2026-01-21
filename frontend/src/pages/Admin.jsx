@@ -23,6 +23,10 @@ export default function Admin() {
   const [editingId, setEditingId] = useState(null);
   // const [draft, setDraft] = useState({});
   const [status, setStatus] = useState("");
+  const [editSubOpen, setEditSubOpen] = useState(false);
+  const [editSub, setEditSub] = useState(null);
+  const [editSubStatus, setEditSubStatus] = useState("");
+  const [editGeoStatus, setEditGeoStatus] = useState("");
 
   const authHeaders = useMemo(
     () => ({ Authorization: `Bearer ${getToken()}` }),
@@ -43,6 +47,68 @@ export default function Admin() {
   const [draft, setDraft] = useState(emptyDraft);
   const [geoStatus, setGeoStatus] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
+
+
+  function openEditSubmission(s) {
+    setEditSubStatus("");
+    setEditGeoStatus("");
+    setEditSub({ ...s }); // copy
+    setEditSubOpen(true);
+  }
+
+  async function geocodeEditSubmission() {
+    setEditGeoStatus("");
+    if (!editSub?.address) {
+      setEditGeoStatus("Enter an address first.");
+      return;
+    }
+
+    const url = new URL("/admin/geocode", API_BASE);
+    url.searchParams.set("q", editSub.address);
+
+    const res = await fetch(url.toString(), { headers: authHeaders });
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    const data = await res.json();
+    if (!res.ok) {
+      setEditGeoStatus(`Geocode failed: ${data?.detail || res.status}`);
+      return;
+    }
+    if (!data.found) {
+      setEditGeoStatus("No results found.");
+      return;
+    }
+
+    setEditSub((s) => ({ ...s, lat: data.lat, lon: data.lon }));
+    setEditGeoStatus("Found ✓");
+  }
+
+
+  async function saveEditedSubmission() {
+    setEditSubStatus("");
+
+    const res = await fetch(`${API_BASE}/admin/submissions/${editSub.id}`, {
+      method: "PUT",
+      headers: { ...authHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify(editSub),
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/admin/login";
+      return;
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      setEditSubStatus(`Save failed (${res.status}): ${text.slice(0, 200)}`);
+      return;
+    }
+
+    setEditSubStatus("Saved ✓");
+    await loadSubmissions();
+  }
+
 
   function serializeDays(daysArray) {
     // Keep them in weekday order
@@ -90,7 +156,6 @@ export default function Admin() {
     setGeoStatus("Geocoded ✓");
   }
 
-// UNHIDE THIS WHEN DONE ********************************************
   async function saveNewLocation() {
     setSaveStatus("");
 
@@ -559,6 +624,13 @@ export default function Admin() {
                     >
                       Reject
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => openEditSubmission(s)}
+                      className="rounded px-3 py-1 bg-black/10 dark:bg-white/10"
+                    >
+                      Edit
+                    </button>
                   </div>
                 </div>
 
@@ -691,6 +763,117 @@ export default function Admin() {
                   className="rounded-lg px-3 py-2 bg-black text-white dark:bg-white dark:text-black"
                   onClick={saveNewLocation}
                   type="button"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editSubOpen && editSub && (
+        <div className="fixed inset-0 z-[3000]">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setEditSubOpen(false)} />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/10 shadow-xl">
+              <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
+                <div className="font-semibold">Edit Submission</div>
+                <button
+                  type="button"
+                  className="rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+                  onClick={() => setEditSubOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-4 space-y-3">
+                <input
+                  className="w-full rounded-lg border p-2 bg-transparent"
+                  value={editSub.name || ""}
+                  onChange={(e) => setEditSub((s) => ({ ...s, name: e.target.value }))}
+                  placeholder="Name"
+                />
+
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 rounded-lg border p-2 bg-transparent"
+                    value={editSub.address || ""}
+                    onChange={(e) => setEditSub((s) => ({ ...s, address: e.target.value }))}
+                    placeholder="Address"
+                  />
+                  <button
+                    type="button"
+                    onClick={geocodeEditSubmission}
+                    className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    Geocode
+                  </button>
+                </div>
+
+                {editGeoStatus ? <div className="text-xs opacity-80">{editGeoStatus}</div> : null}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className="w-full rounded-lg border p-2 bg-transparent"
+                    value={editSub.lat ?? ""}
+                    onChange={(e) => setEditSub((s) => ({ ...s, lat: e.target.value }))}
+                    placeholder="Latitude"
+                  />
+                  <input
+                    className="w-full rounded-lg border p-2 bg-transparent"
+                    value={editSub.lon ?? ""}
+                    onChange={(e) => setEditSub((s) => ({ ...s, lon: e.target.value }))}
+                    placeholder="Longitude"
+                  />
+                </div>
+
+                <textarea
+                  className="w-full rounded-lg border p-2 bg-transparent"
+                  rows={4}
+                  value={editSub.happy_hour || ""}
+                  onChange={(e) => setEditSub((s) => ({ ...s, happy_hour: e.target.value }))}
+                  placeholder="Happy hour details"
+                />
+
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className="w-full rounded-lg border p-2 bg-transparent"
+                    type="time"
+                    value={editSub.start_time || ""}
+                    onChange={(e) => setEditSub((s) => ({ ...s, start_time: e.target.value }))}
+                  />
+                  <input
+                    className="w-full rounded-lg border p-2 bg-transparent"
+                    type="time"
+                    value={editSub.end_time || ""}
+                    onChange={(e) => setEditSub((s) => ({ ...s, end_time: e.target.value }))}
+                  />
+                </div>
+
+                <input
+                  className="w-full rounded-lg border p-2 bg-transparent"
+                  value={editSub.days || ""}
+                  onChange={(e) => setEditSub((s) => ({ ...s, days: e.target.value }))}
+                  placeholder="Days (e.g., Mon,Tue,Wed)"
+                />
+
+                {editSubStatus ? <div className="text-xs opacity-80">{editSubStatus}</div> : null}
+              </div>
+
+              <div className="p-4 border-t border-black/10 dark:border-white/10 flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
+                  onClick={() => setEditSubOpen(false)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="rounded-lg px-3 py-2 bg-black text-white dark:bg-white dark:text-black"
+                  onClick={saveEditedSubmission}
                 >
                   Save
                 </button>

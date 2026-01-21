@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from cache import CACHE_KEY_LOCATIONS, CACHE_TTL_SECONDS, cache_get_json, cache_set_json, invalidate_locations_cache
 from auth import create_token, require_admin
-from data_store import load_locations, create_location, update_location, delete_location, create_submission, list_submissions, approve_submission, reject_submission
+from data_store import load_locations, create_location, update_location, delete_location, create_submission, list_submissions, approve_submission, reject_submission, update_submission
 import httpx
 from urllib.parse import quote
 
@@ -144,3 +144,21 @@ async def admin_approve(sub_id: str, _: bool = Depends(require_admin)):
 def admin_reject(sub_id: str, _: bool = Depends(require_admin)):
     reject_submission(sub_id)
     return {"ok": True}
+
+@app.get("/admin/geocode")
+def admin_geocode(q: str = Query(min_length=3), _: bool = Depends(require_admin)):
+    try:
+        result = geocode_mapbox(q)
+        if not result:
+            return {"found": False}
+        lat, lon = result
+        return {"found": True, "lat": lat, "lon": lon}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@app.put("/admin/submissions/{sub_id}")
+def admin_update_submission(sub_id: str, payload: dict, _: bool = Depends(require_admin)):
+    update_submission(sub_id, payload)  # implement in data_store.py
+    return {"ok": True}
+
+
