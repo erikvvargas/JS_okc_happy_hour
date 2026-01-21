@@ -142,20 +142,23 @@ function App() {
         />
 
       </div>
-      <button
-        onClick={() => setPanelOpen(true)}
-        className="absolute top-4 left-[92px] md:left-[320px] z-[1200] rounded-full px-3 py-2 text-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-black/10 dark:border-white/10 shadow-md text-gray-900 dark:text-gray-100"
-      >
-        List
-      </button>
+      <div className="absolute top-4 left-4 md:left-[320px] z-[1300] flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setPanelOpen(true)}
+          className="rounded-full px-3 py-2 text-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-black/10 dark:border-white/10 shadow-md text-gray-900 dark:text-gray-100"
+        >
+          List
+        </button>
 
-      <button
-        type="button"
-        onClick={() => setSubmitOpen(true)}
-        className="absolute top-4 left-[100px] md:left-[400px] z-[1300] rounded-full px-3 py-2 text-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-black/10 dark:border-white/10 shadow-md text-gray-900 dark:text-gray-100"
-      >
-        Submit
-      </button>
+        <button
+          type="button"
+          onClick={() => setSubmitOpen(true)}
+          className="rounded-full px-3 py-2 text-sm bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-black/10 dark:border-white/10 shadow-md text-gray-900 dark:text-gray-100"
+        >
+          Submit
+        </button>
+      </div>
 
       <DesktopFilters
         selectedDay={selectedDay}
