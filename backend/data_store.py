@@ -49,16 +49,18 @@ def load_locations():
 
 
 def create_location(payload: dict):
+    lat_raw = payload.get("lat")
+    lon_raw = payload.get("lon")
+    lat = float(lat_raw) if lat_raw not in (None, "") else None
+    lon = float(lon_raw) if lon_raw not in (None, "") else None
     with SessionLocal() as db:
         loc_id = str(payload.get("id") or uuid4())
         loc = Location(
             id=loc_id,
             name=str(payload["name"]),
             address=payload.get("address"),
-            lat_raw = payload.get("lat"),
-            lon_raw = payload.get("lon"),
-            lat = float(lat_raw) if lat_raw not in (None, "") else None,
-            lon = float(lon_raw) if lon_raw not in (None, "") else None,
+            lat=lat,
+            lon=lon,
             days=payload.get("days"),
             happy_hour=payload.get("happy_hour"),
             # description=payload.get("description"),
@@ -71,6 +73,10 @@ def create_location(payload: dict):
     return {"ok": True}
 
 def update_location(loc_id: str, payload: dict):
+    lat_raw = payload.get("lat")
+    lon_raw = payload.get("lon")
+    lat = float(lat_raw) if lat_raw not in (None, "") else None
+    lon = float(lon_raw) if lon_raw not in (None, "") else None
     with SessionLocal() as db:
         db.execute(
             update(Location)
@@ -78,10 +84,8 @@ def update_location(loc_id: str, payload: dict):
             .values(
                 name=payload.get("name"),
                 address=payload.get("address"),
-                lat_raw = payload.get("lat"),
-                lon_raw = payload.get("lon"),
-                lat = float(lat_raw) if lat_raw not in (None, "") else None,
-                lon = float(lon_raw) if lon_raw not in (None, "") else None,
+                lat=lat,
+                lon=lon,
                 days=payload.get("days"),
                 happy_hour=payload.get("happy_hour"),
                 # description=payload.get("description"),
