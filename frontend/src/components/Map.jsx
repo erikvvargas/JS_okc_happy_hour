@@ -93,7 +93,7 @@ function LocateControl({ onLocated }) {
 
       // ⬇️ This is the spacing ABOVE zoom. Smaller = closer to zoom.
       // Try 44px or 40px depending on device.
-      btn.style.marginBottom = "44px";
+      btn.style.marginBottom = "32px";
 
       btn.textContent = "⌖";
       btn.style.fontSize = "18px";
@@ -153,8 +153,8 @@ function UserLocationMarker({ pos }) {
           <div class="user-loc-dot"></div>
         </div>
       `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
     });
 
     const marker = L.marker([pos.lat, pos.lon], { icon, interactive: false }).addTo(map);
@@ -191,6 +191,12 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
     className="h-full w-full"
     zoomControl={false}
     whenCreated={(m) => onMapReady?.(m)}
+    zoomAnimation={false}
+    fadeAnimation={false}
+    markerZoomAnimation={false}
+    inertia={false}
+    inertiaDeceleration={3000}
+    inertiaMaxSpeed={1500}
     >
       {/* <TileLayer url={tileUrl} attribution={tileAttr} /> */}
       <TileLayer

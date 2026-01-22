@@ -43,19 +43,19 @@ html, body, #root {
 
 .user-loc-wrap {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
 }
 
 .user-loc-dot {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   transform: translate(-50%, -50%);
-  background: #1a73e8; /* Google-ish blue */
-  border: 2px solid white;
+  background: #1a73e8;
+  border: 3px solid white;
   border-radius: 9999px;
   box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.25);
   z-index: 2;
@@ -65,8 +65,8 @@ html, body, #root {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   transform: translate(-50%, -50%);
   background: rgba(26, 115, 232, 0.25);
   border-radius: 9999px;
