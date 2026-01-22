@@ -4,11 +4,15 @@ function statusRank(s) {
   return 2;
 }
 
-function statusLabel(s) {
-  if (s === "ACTIVE") return "Happening now";
-  if (s === "UPCOMING") return "Later today";
+function statusLabel(loc, nowMin) {
+  if (loc._status === "ACTIVE") return "Happening now";
+  if (loc._status === "UPCOMING") {
+    const t = timeUntilLabel(loc, nowMin);
+    return t ? `Starts in ${t}` : "Later today";
+  }
   return "Not today";
 }
+
 
 function timeToMinutes(t) {
   if (!t || typeof t !== "string") return null;
@@ -33,7 +37,7 @@ function timeUntilLabel(loc, nowMin) {
 
 
 
-export default function LocationsList({ locations, onSelect }) {
+export default function LocationsList({ locations, onSelect, nowMin }) {
   const sorted = [...locations].sort((a, b) => {
     const ra = statusRank(a._status);
     const rb = statusRank(b._status);
@@ -61,7 +65,7 @@ export default function LocationsList({ locations, onSelect }) {
                   : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300",
               ].join(" ")}
             >
-              {statusLabel(loc._status)}
+              {statusLabel(loc, nowMin)}
             </span>
           </div>
 

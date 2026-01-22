@@ -61,6 +61,81 @@ function MapBackgroundClick({ onBackgroundClick }) {
   return null;
 }
 
+function LocateControl() {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    const control = L.control({ position: "bottomright" });
+
+    control.onAdd = function () {
+      const container = L.DomUtil.create("div", "leaflet-bar");
+      container.style.background = "transparent";
+      container.style.border = "none";
+      container.style.boxShadow = "none";
+
+      const btn = L.DomUtil.create("button", "", container);
+      btn.type = "button";
+      btn.title = "Center on my location";
+      btn.setAttribute("aria-label", "Center on my location");
+
+      // Tailwind-ish inline styles (so it looks consistent even outside Tailwind scope)
+      btn.style.width = "36px";
+      btn.style.height = "36px";
+      btn.style.borderRadius = "9999px";
+      btn.style.border = "1px solid rgba(0,0,0,0.12)";
+      btn.style.background = "rgba(255,255,255,0.92)";
+      btn.style.backdropFilter = "blur(8px)";
+      btn.style.boxShadow = "0 6px 16px rgba(0,0,0,0.12)";
+      btn.style.cursor = "pointer";
+      btn.style.display = "grid";
+      btn.style.placeItems = "center";
+      btn.style.marginBottom = "52px"; // pushes it ABOVE the zoom +/- (tweak if needed)
+
+      // crosshair glyph
+      btn.textContent = "⌖";
+      btn.style.fontSize = "18px";
+      btn.style.lineHeight = "18px";
+      btn.style.color = "#111827";
+
+      // Prevent the map from dragging when clicking the button
+      L.DomEvent.disableClickPropagation(btn);
+      L.DomEvent.on(btn, "click", async (e) => {
+        L.DomEvent.stopPropagation(e);
+
+        if (!navigator.geolocation) {
+          alert("Geolocation is not supported on this device.");
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            map.flyTo([latitude, longitude], Math.max(map.getZoom(), 15), {
+              animate: true,
+              duration: 0.8,
+            });
+          },
+          (err) => {
+            alert(err?.message || "Could not get your location.");
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      });
+
+      return container;
+    };
+
+    control.addTo(map);
+    return () => {
+      control.remove();
+    };
+  }, [map]);
+
+  return null;
+}
+
 
 export default function Map({ locations, onSelect, selected, theme, onBackgroundClick, onMapReady }) {
 
@@ -106,7 +181,8 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
       <FlyToSelected selected={selected} />
       <MapBackgroundClick onBackgroundClick={onBackgroundClick} />
       <ZoomControl position="bottomright" />
-
+      <LocateControl />
+      
       <MarkerClusterGroup chunkedLoading>
         {locations.map((loc) => (
           <Marker
