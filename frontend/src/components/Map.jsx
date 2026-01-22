@@ -191,9 +191,9 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
     className="h-full w-full"
     zoomControl={false}
     whenCreated={(m) => onMapReady?.(m)}
-    zoomAnimation={false}
-    fadeAnimation={false}
-    markerZoomAnimation={false}
+    // zoomAnimation={false}
+    // fadeAnimation={false}
+    // markerZoomAnimation={false}
     inertia={false}
     inertiaDeceleration={3000}
     inertiaMaxSpeed={1500}
