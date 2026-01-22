@@ -278,6 +278,7 @@ needs to be removed from the map that is rendering incorrectly */}
             setSelected(null);
             setPanelOpen(false);
           }}
+          nowMin={resolvedTimeMin}
         />
       ) : null}
 

@@ -52,24 +52,26 @@ function FlyToSelected({ selected }) {
     const lon = Number(selected.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-    // Fly to marker
+    const isMobile = window.innerWidth < 768;
+
+    // 1) Fly to the marker
     map.flyTo([lat, lon], Math.max(map.getZoom(), 15), {
       animate: true,
-      duration: 0.8,
+      duration: 0.6,
     });
 
-    // On mobile, push the marker upward so it's visible above the bottom drawer
-    if (window.innerWidth < 768) {
-      // With a ~52vh sheet + header, we need a bigger nudge.
+    // 2) On mobile, pan it upward so it's visible above the bottom sheet
+    if (isMobile) {
       const offsetY = Math.round(window.innerHeight * 0.32);
 
+      // Use requestAnimationFrame + short timeout so we run after Leaflet starts animating
       const t = setTimeout(() => {
-        map.panBy([0, -offsetY], { animate: true, duration: 0.35 });
-      }, 300);
+        map.panBy([0, -offsetY], { animate: true, duration: 0.25 });
+      }, 200);
 
       return () => clearTimeout(t);
     }
-  }, [selected, map]);
+  }, [selected?.id, map]); // <- IMPORTANT: depend on selected.id
 
   return null;
 }

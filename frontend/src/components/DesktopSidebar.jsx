@@ -9,6 +9,7 @@ export default function DesktopSidebar({
     onSelect,
     onBack,
     onClosePanel,
+    nowMin
 }) {
   return (
     <div
@@ -46,7 +47,7 @@ export default function DesktopSidebar({
               <LocationDetails location={location} />
             </div>
           ) : (
-            <LocationsList locations={locations} onSelect={onSelect} />
+            <LocationsList locations={locations} onSelect={onSelect} nowMin={nowMin}/>
           )}
 
         </div>
