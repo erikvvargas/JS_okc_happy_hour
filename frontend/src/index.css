@@ -34,6 +34,16 @@ html, body, #root {
   box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.18), 0 6px 14px rgba(0,0,0,0.25);
 }
 
+/* highlight ring/halo for the selected location marker */
+.hh-pin-selected {
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 4px rgba(168, 85, 247, 0.55), /* purple halo */
+    0 6px 14px rgba(0, 0, 0, 0.25);
+  transform: scale(1.15);
+}
+
 /* Give Leaflet controls breathing room (helps mobile safe areas) */
 .leaflet-bottom.leaflet-right {
   margin-bottom: 16px;

@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-function iconForStatus(status) {
+function iconForStatus(status, isSelected) {
   const cls =
     status === "ACTIVE"
       ? "hh-pin hh-pin-active"
@@ -22,13 +22,16 @@ function iconForStatus(status) {
       ? "hh-pin hh-pin-upcoming"
       : "hh-pin hh-pin-inactive";
 
+  const selectedCls = isSelected ? " hh-pin-selected" : "";
+
   return L.divIcon({
-    className: "", // important: prevents default styles
-    html: `<div class="${cls}"></div>`,
+    className: "",
+    html: `<div class="${cls}${selectedCls}"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
   });
 }
+
 
 
 function MapTapCloser({ closeFilters }) {
@@ -214,20 +217,25 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
       <UserLocationMarker pos={userPos} />
 
       <MarkerClusterGroup chunkedLoading>
-        {locations.map((loc) => (
-          <Marker
-            key={loc.id}
-            position={[Number(loc.lat), Number(loc.lon)]}
-            icon={iconForStatus(loc._status)}
-            eventHandlers={{
-              click: (e) => {
-                e?.originalEvent?.stopPropagation?.();
-                onSelect?.(loc);
-              },
-            }}
-          />
+        {locations.map((loc) => {
+          const isSelected = selected?.id === loc.id;
 
-        ))}
+          return (
+            <Marker
+              key={loc.id}
+              position={[Number(loc.lat), Number(loc.lon)]}
+              icon={iconForStatus(loc._status, isSelected)}
+              zIndexOffset={isSelected ? 1000 : 0}
+              eventHandlers={{
+                click: (e) => {
+                  e?.originalEvent?.stopPropagation?.();
+                  onSelect?.(loc);
+                },
+              }}
+            />
+          );
+        })}
+
       </MarkerClusterGroup>
     </MapContainer>
   );

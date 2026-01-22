@@ -69,10 +69,18 @@ export default function LocationsList({ locations, onSelect, nowMin }) {
             </span>
           </div>
 
-          <div className="text-sm opacity-80 mt-1">
-            {loc.start_time && loc.end_time ? `${loc.start_time}–${loc.end_time}` : ""}
-            {loc.days ? ` • ${loc.days}` : ""}
+          <div className="text-sm opacity-80 mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+            {loc.start_time && loc.end_time ? (
+              <span className="shrink-0">{loc.start_time}–{loc.end_time}</span>
+            ) : null}
+
+            {loc.days ? (
+              <span className="min-w-0 max-w-full truncate">
+                • {loc.days}
+              </span>
+            ) : null}
           </div>
+
         </button>
       ))}
     </div>
