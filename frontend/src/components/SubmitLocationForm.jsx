@@ -251,11 +251,13 @@ export default function SubmitLocationForm({
         >
           Cancel
         </button>
-        <button 
-        type="submit" 
-        className={BTN_SUBMIT}
+        <button
+          type="button"
+          className="rounded-lg px-3 py-2 bg-black text-white hover:opacity-90 dark:bg-indigo-600 dark:text-white disabled:opacity-60"
+          onClick={submit}
+          disabled={submitting}
         >
-          Submit
+          {submitting ? "Submitting…" : "Submit"}
         </button>
       </div>
     </div>
