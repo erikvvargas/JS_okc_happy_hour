@@ -32,12 +32,32 @@ export default function SubmitLocationForm({
   const [latLon, setLatLon] = useState({ lat: "", lon: "" });
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const LABEL = "text-sm font-medium text-gray-700 dark:text-gray-200";
+
   const INPUT =
-  "w-full rounded-lg border p-2 bg-transparent " +
-  "text-gray-900 dark:text-gray-100 " +
-  "border-black/10 dark:border-white/10 " +
-  "placeholder:text-gray-500 dark:placeholder:text-gray-400 " +
-  "focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10";
+    "w-full rounded-lg border p-2 bg-transparent " +
+    "text-gray-900 dark:text-gray-100 " +
+    "border-black/10 dark:border-white/10 " +
+    "placeholder:text-gray-500 dark:placeholder:text-gray-400 " +
+    "focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10";
+
+  const CHIP =
+    "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm select-none " +
+    "border-black/10 dark:border-white/10 " +
+    "bg-white/70 dark:bg-gray-800/60 " +
+    "text-gray-900 dark:text-gray-100";
+
+  const CHIP_ACTIVE =
+    "bg-black text-white border-black dark:bg-indigo-600 dark:border-indigo-500";
+
+  const BTN_CANCEL =
+    "rounded-lg px-3 py-2 border border-black/10 dark:border-white/10 " +
+    "hover:bg-black/5 dark:hover:bg-white/10 text-gray-900 dark:text-gray-100";
+
+  const BTN_SUBMIT =
+    "rounded-lg px-3 py-2 bg-black text-white hover:opacity-90 " +
+    "dark:bg-indigo-600 dark:text-white disabled:opacity-60";
 
   const toggleDay = (d) => {
     setDraft((x) => {
@@ -98,31 +118,7 @@ export default function SubmitLocationForm({
       note: draft.note.trim() || null,
     };
 
-    const LABEL = "text-sm font-medium text-gray-700 dark:text-gray-200";
 
-    const INPUT =
-      "w-full rounded-lg border p-2 bg-transparent " +
-      "text-gray-900 dark:text-gray-100 " +
-      "border-black/10 dark:border-white/10 " +
-      "placeholder:text-gray-500 dark:placeholder:text-gray-400 " +
-      "focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10";
-
-    const CHIP =
-      "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm select-none " +
-      "border-black/10 dark:border-white/10 " +
-      "bg-white/70 dark:bg-gray-800/60 " +
-      "text-gray-900 dark:text-gray-100";
-
-    const CHIP_ACTIVE =
-      "bg-black text-white border-black dark:bg-indigo-600 dark:border-indigo-500";
-
-    const BTN_CANCEL =
-      "rounded-lg px-3 py-2 border border-black/10 dark:border-white/10 " +
-      "hover:bg-black/5 dark:hover:bg-white/10 text-gray-900 dark:text-gray-100";
-
-    const BTN_SUBMIT =
-      "rounded-lg px-3 py-2 bg-black text-white hover:opacity-90 " +
-      "dark:bg-indigo-600 dark:text-white disabled:opacity-60";
 
 
     try {
