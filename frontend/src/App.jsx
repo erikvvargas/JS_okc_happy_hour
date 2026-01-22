@@ -164,8 +164,12 @@ function App() {
           Submit
         </button>
       </div>
-      
-      <button
+
+
+{/* Commented out to ensure this is the correct crosshair that 
+needs to be removed from the map that is rendering incorrectly */}
+
+      {/* <button
         type="button"
         onClick={() => {
           if (!map) return;
@@ -202,7 +206,7 @@ function App() {
         ⌖
       </button>
 
-
+ */}
       <DesktopFilters
         selectedDay={selectedDay}
         setSelectedDay={setSelectedDay}
@@ -271,21 +275,19 @@ function App() {
         />
       ) : null}
 
-      {panelOpen ? (
-        <MobileDrawer
-          open={panelOpen}
-          location={selected}
-          locations={locationsWithStatus}
-          onSelect={handleSelect}
-          onBack={() => setSelected(null)}
-          onClosePanel={() => {
-            setSelected(null);
-            setPanelOpen(false);
-          }}
-          nowMin={resolvedTimeMin}
-        />
+      <MobileDrawer
+        open={panelOpen}
+        location={selected}
+        locations={locationsWithStatus}
+        onSelect={handleSelect}
+        onBack={() => setSelected(null)}
+        onClosePanel={() => {
+          setSelected(null);
+          setPanelOpen(false);
+        }}
+        nowMin={resolvedTimeMin}
+      />
 
-      ) : null}
     </div>
   );
 }
