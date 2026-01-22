@@ -91,6 +91,7 @@ function App() {
   const [submitOpen, setSubmitOpen] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
     const calc = () => setIsMobile(window.innerWidth < 768);
@@ -136,10 +137,15 @@ function App() {
           onSelect={handleSelect}
           selected={selected}
           theme={theme}
-          onBackgroundClick={closeAllOverlays} // closes Filters drawer on tap, plus others
+          onBackgroundClick={() => {
+            setSelected(null);
+            setPanelOpen(false);
+          }}
+          onMapReady={setMap}
         />
-      </div>
 
+      </div>
+      
       {/* List + Submit pills (you can tweak spacing later) */}
       <div className="absolute top-4 left-[92px] md:left-[320px] z-[1300] flex items-center gap-2">
         <button
@@ -158,6 +164,44 @@ function App() {
           Submit
         </button>
       </div>
+      
+      <button
+        type="button"
+        onClick={() => {
+          if (!map) return;
+          if (!navigator.geolocation) {
+            alert("Geolocation not supported on this device.");
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              map.flyTo([latitude, longitude], Math.max(map.getZoom(), 15), {
+                animate: true,
+                duration: 0.8,
+              });
+            },
+            (err) => {
+              alert(err?.message || "Could not get your location.");
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        }}
+        className={[
+          "absolute z-[1200] rounded-full p-2",
+          "bg-white/90 dark:bg-gray-900/90 backdrop-blur",
+          "border border-black/10 dark:border-white/10 shadow-md",
+          "text-gray-900 dark:text-gray-100",
+          // position: bottom-right, above Leaflet ZoomControl
+          "right-3",
+          "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]",
+        ].join(" ")}
+        aria-label="Center map on my location"
+        title="Center on me"
+      >
+        ⌖
+      </button>
+
 
       <DesktopFilters
         selectedDay={selectedDay}
@@ -238,7 +282,9 @@ function App() {
             setSelected(null);
             setPanelOpen(false);
           }}
+          nowMin={resolvedTimeMin}
         />
+
       ) : null}
     </div>
   );

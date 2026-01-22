@@ -62,7 +62,8 @@ function MapBackgroundClick({ onBackgroundClick }) {
 }
 
 
-export default function Map({ locations, onSelect, selected, theme, onBackgroundClick }) {
+export default function Map({ locations, onSelect, selected, theme, onBackgroundClick, onMapReady }) {
+
   const isDark = theme === "dark";
 
   // const tileUrl = isDark
@@ -90,7 +91,9 @@ export default function Map({ locations, onSelect, selected, theme, onBackground
     center={[35.4676, -97.5164]} 
     zoom={13} 
     className="h-full w-full"
-    zoomControl={false}>
+    zoomControl={false}
+    whenCreated={(m) => onMapReady?.(m)}
+    >
       {/* <TileLayer url={tileUrl} attribution={tileAttr} /> */}
       <TileLayer
         url={tileUrl}

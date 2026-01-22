@@ -10,6 +10,29 @@ function statusLabel(s) {
   return "Not today";
 }
 
+function timeToMinutes(t) {
+  if (!t || typeof t !== "string") return null;
+  const [hh, mm] = t.split(":").map(Number);
+  if (!Number.isFinite(hh) || !Number.isFinite(mm)) return null;
+  return hh * 60 + mm;
+}
+
+function timeUntilLabel(loc, nowMin) {
+  if (loc?._status !== "UPCOMING") return null;
+
+  const start = timeToMinutes(loc.start_time);
+  if (start == null || nowMin == null) return null;
+
+  const diff = start - nowMin; // minutes until start
+  if (diff <= 0) return null;
+
+  if (diff < 60) return `${diff} min`;
+  const hours = Math.ceil(diff / 60);
+  return `${hours} hr`;
+}
+
+
+
 export default function LocationsList({ locations, onSelect }) {
   const sorted = [...locations].sort((a, b) => {
     const ra = statusRank(a._status);
