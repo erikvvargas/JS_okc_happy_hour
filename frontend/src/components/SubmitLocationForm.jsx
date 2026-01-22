@@ -32,6 +32,12 @@ export default function SubmitLocationForm({
   const [latLon, setLatLon] = useState({ lat: "", lon: "" });
   const [status, setStatus] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const INPUT =
+  "w-full rounded-lg border p-2 bg-transparent " +
+  "text-gray-900 dark:text-gray-100 " +
+  "border-black/10 dark:border-white/10 " +
+  "placeholder:text-gray-500 dark:placeholder:text-gray-400 " +
+  "focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10";
 
   const toggleDay = (d) => {
     setDraft((x) => {
@@ -123,7 +129,7 @@ export default function SubmitLocationForm({
   return (
     <div className="space-y-3">
       <input
-        className="w-full rounded-lg border p-2 bg-transparent"
+        className={INPUT}
         placeholder="Place name"
         value={draft.name}
         onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
@@ -156,7 +162,7 @@ export default function SubmitLocationForm({
       ) : null}
 
       <textarea
-        className="w-full rounded-lg border p-2 bg-transparent"
+        className={INPUT}
         placeholder="Happy hour details (deals, times, etc.)"
         rows={3}
         value={draft.happy_hour}
@@ -186,7 +192,7 @@ export default function SubmitLocationForm({
         <div>
           <div className="text-xs opacity-70 mb-1">Start</div>
           <input
-            className="w-full rounded-lg border p-2 bg-transparent"
+            className={INPUT}
             type="time"
             value={draft.start_time}
             onChange={(e) => setDraft((d) => ({ ...d, start_time: e.target.value }))}
@@ -195,7 +201,7 @@ export default function SubmitLocationForm({
         <div>
           <div className="text-xs opacity-70 mb-1">End</div>
           <input
-            className="w-full rounded-lg border p-2 bg-transparent"
+            className={INPUT}
             type="time"
             value={draft.end_time}
             onChange={(e) => setDraft((d) => ({ ...d, end_time: e.target.value }))}
@@ -204,7 +210,7 @@ export default function SubmitLocationForm({
       </div>
 
       <textarea
-        className="w-full rounded-lg border p-2 bg-transparent"
+        className={INPUT}
         placeholder="Optional note (e.g., 'bar-only', 'lounge', etc.)"
         rows={2}
         value={draft.note}
@@ -216,7 +222,7 @@ export default function SubmitLocationForm({
       <div className="pt-2 flex justify-end gap-2">
         <button
           type="button"
-          className="rounded-lg px-3 py-2 border hover:bg-black/5 dark:hover:bg-white/10"
+          className="rounded-lg px-3 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 text-gray-900 dark:text-gray-100"
           onClick={onCancel}
           disabled={submitting}
         >
@@ -224,7 +230,7 @@ export default function SubmitLocationForm({
         </button>
         <button
           type="button"
-          className="rounded-lg px-3 py-2 bg-black text-white dark:bg-white dark:text-black disabled:opacity-60"
+          className="rounded-lg px-3 py-2 bg-black text-white hover:opacity-90 dark:bg-indigo-600 dark:text-white disabled:opacity-60"
           onClick={submit}
           disabled={submitting}
         >

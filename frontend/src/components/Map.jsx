@@ -44,17 +44,37 @@ function MapTapCloser({ closeFilters }) {
 
 function FlyToSelected({ selected }) {
   const map = useMap();
+
   useEffect(() => {
-    if (!selected) return;
+    if (!selected || !map) return;
+
     const lat = Number(selected.lat);
     const lon = Number(selected.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-    map.flyTo([lat, lon], Math.max(map.getZoom(), 15), { animate: true, duration: 0.8 });
+    // Fly to marker
+    map.flyTo([lat, lon], Math.max(map.getZoom(), 15), {
+      animate: true,
+      duration: 0.8,
+    });
+
+    // On mobile, push the marker upward so it's visible above the bottom drawer
+    if (window.innerWidth < 768) {
+      // drawer ~52vh => move marker upward by ~20% of screen height
+      const offsetY = Math.round(window.innerHeight * 0.22);
+
+      // run after flyTo starts so the pan doesn't fight it
+      const t = setTimeout(() => {
+        map.panBy([0, -offsetY], { animate: true, duration: 0.35 });
+      }, 250);
+
+      return () => clearTimeout(t);
+    }
   }, [selected, map]);
 
   return null;
 }
+
 
 function MapBackgroundClick({ onBackgroundClick }) {
   useMapEvents({

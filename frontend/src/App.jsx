@@ -75,7 +75,12 @@ function getStatus(loc, dayAbbrev, timeMin) {
 }
 
 function App() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") return saved;
+    return window.matchMedia?.("(prefers-color-scheme: dark)")?.matches ? "dark" : "light";
+  });
+
   const [locations, setLocations] = useState([]);
   const [selected, setSelected] = useState(null);
 
@@ -107,6 +112,7 @@ function App() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   useEffect(() => {

@@ -130,7 +130,7 @@ export default function MobileDrawer({
       open={open}
       onClose={onClosePanel}
       title={location ? "Details" : "List"}
-      height="65vh"
+      height="52vh"
       zIndex={1400}
     >
       {location ? (
