@@ -60,13 +60,12 @@ function FlyToSelected({ selected }) {
 
     // On mobile, push the marker upward so it's visible above the bottom drawer
     if (window.innerWidth < 768) {
-      // drawer ~52vh => move marker upward by ~20% of screen height
-      const offsetY = Math.round(window.innerHeight * 0.22);
+      // With a ~52vh sheet + header, we need a bigger nudge.
+      const offsetY = Math.round(window.innerHeight * 0.32);
 
-      // run after flyTo starts so the pan doesn't fight it
       const t = setTimeout(() => {
         map.panBy([0, -offsetY], { animate: true, duration: 0.35 });
-      }, 250);
+      }, 300);
 
       return () => clearTimeout(t);
     }

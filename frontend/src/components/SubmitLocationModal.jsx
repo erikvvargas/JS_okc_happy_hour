@@ -7,12 +7,13 @@ export default function SubmitLocationModal({ open, onClose }) {
     <div className="fixed inset-0 z-[3000]">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/10 shadow-xl">
+        <div className="w-full max-w-2xl rounded-2xl bg-white text-gray-900 border border-black/10 shadow-2xl
+           dark:bg-gray-900 dark:text-gray-100 dark:border-white/10">
           <div className="flex items-center justify-between p-4 border-b border-black/10 dark:border-white/10">
-            <div className="font-semibold">Submit a Happy Hour</div>
+            <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">Submit a Happy Hour</div>
             <button
               type="button"
-              className="rounded-md px-2 py-1 hover:bg-black/5 dark:hover:bg-white/10"
+              className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
               onClick={onClose}
             >
               ✕
