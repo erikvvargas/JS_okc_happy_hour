@@ -94,9 +94,7 @@ export default function MobileDrawer({
     </div>
   );
 }
-import { useEffect, useState } from "react";
-import LocationsList from "./LocationsList";
-import LocationDetails from "./LocationDetails";
+
 
 export default function MobileDrawer({
   open,
